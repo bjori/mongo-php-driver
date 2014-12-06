@@ -1175,7 +1175,7 @@ static void phongo_cursor_it_move_forward(zend_object_iterator *iter TSRMLS_DC) 
 		cursor_it->current = NULL;
 	}
 
-	if (_mongoc_cursor_is_command(cursor_it->cursor) && bson_iter_next(&cursor_it->first_batch_iter)) {
+	if (bson_iter_next(&cursor_it->first_batch_iter)) {
 		if (BSON_ITER_HOLDS_DOCUMENT (&cursor_it->first_batch_iter)) {
 			const uint8_t *data = NULL;
 			uint32_t data_len = 0;
@@ -1199,7 +1199,7 @@ static void phongo_cursor_it_rewind(zend_object_iterator *iter TSRMLS_DC) /* {{{
 
 	/* firstBatch is empty when the query simply didn't return any results */
 	if (cursor_it->firstBatch) {
-		if (cursor_it->is_command_cursor && _mongoc_cursor_is_command(cursor_it->cursor)) {
+		if (cursor_it->is_command_cursor) {
 			bson_iter_init(&cursor_it->first_batch_iter, cursor_it->firstBatch);
 			if (bson_iter_next (&cursor_it->first_batch_iter)) {
 				if (BSON_ITER_HOLDS_DOCUMENT (&cursor_it->first_batch_iter)) {
