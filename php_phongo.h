@@ -132,14 +132,7 @@ void php_phongo_new_regex_from_regex_and_options(zval *object, const char *patte
 void php_phongo_result_free(php_phongo_result_t *result);
 
 #ifdef PHP_DEBUG
-void _phongo_debug_bson(bson_t *bson) {
-	char   *str;
-	size_t  str_len;
-
-	str = bson_as_json(bson, &str_len);
-
-	php_printf("JSON: %s\n", str);
-}
+void _phongo_debug_bson(bson_t *bson);
 #else
 	#define _phongo_debug_bson(bson)
 #endif
