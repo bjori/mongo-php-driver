@@ -418,7 +418,7 @@ void phongo_writeresult_init(zval *return_value, const bson_t *bson, int server_
 		}
 	}
 
-	if (bson_iter_init_find(&iter, bson, "writeConcernErrors") &&
+	if (bson_iter_init_find(&iter, bson, "writeConcernError") &&
 		BSON_ITER_HOLDS_ARRAY(&iter) &&
 		bson_iter_recurse(&iter, &ar)) {
 
@@ -564,7 +564,8 @@ bool phongo_execute_write(mongoc_client_t *client, char *namespace, mongoc_bulk_
 
 	hint = mongoc_bulk_operation_execute(batch, &reply, &error);
 
-	if (!hint) {
+	/* If there is no error then the command succeeded, but the write not */
+	if (!hint && (error.code || error.domain)) {
 		/* If no exception has been thrown already, for example connection exception */
 		if (!EG(exception)) {
 			zval *e = phongo_throw_exception_from_bson_error_t(&error TSRMLS_CC);
