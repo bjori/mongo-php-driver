@@ -147,7 +147,7 @@ $jonpall = array(
  */
 $ordered = true;
 
-$batch = new MongoDB\WriteBatch($ordered);
+$batch = new MongoDB\Driver\WriteBatch($ordered);
 
 ?&gt;
 </code></pre>
@@ -215,8 +215,8 @@ $batch-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&qu
 
 <h2 id="executing-and-checking-the-results">Executing and checking the results</h2>
 <pre><code class="php">&lt;?php
-$manager = new MongoDB\Manager(&quot;mongodb://localhost:27017&quot;);
-$wc      = new MongoDB\WriteConcern(MongoDB\WriteConcern::MAJORITY);
+$manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
+$wc      = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
 $result  = $manager-&gt;executeWriteBatch(&quot;db.collection&quot;, $batch, $wc);
 
 printf(&quot;insertedCount: %d\n&quot;, $result-&gt;getInsertedCount());
@@ -229,7 +229,7 @@ foreach ($result-&gt;getUpsertedIds() as $index =&gt; $id) {
     printf(&quot;upsertedId: '%s', index: %d\n&quot;, $id, $index);
 }
 
-$query  = new MongoDB\Query(array(&quot;viking&quot; =&gt; false));
+$query  = new MongoDB\Driver\Query(array(&quot;viking&quot; =&gt; false));
 $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query);
 var_dump(iterator_to_array($cursor));
 
@@ -246,5 +246,6 @@ var_dump(iterator_to_array($cursor));
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
         <script src="../pretty.js"></script>
+        <script src="../jira.js"></script>
     </body>
 </html>

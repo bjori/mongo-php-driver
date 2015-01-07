@@ -126,7 +126,7 @@
 $document = array(&quot;hello&quot; =&gt; &quot;world&quot;);
 
 /* We want to gurantee all writes to the majority of our nodes */
-$w = MongoDB\WriteConcern::MAJORITY;
+$w = MongoDB\Driver\WriteConcern::MAJORITY;
 
 /* But don't be waiting on me fore more then 1000ms (1sec),
  * I have an application to run! */
@@ -136,12 +136,12 @@ $wtimeout = 1000;
 $journal = $fsync = false;
 
 /* Construct the WriteConcern object from our options */
-$wc = new MongoDB\WriteConcern($w, $wtimeout, $journal, $fsync);
+$wc = new MongoDB\Driver\WriteConcern($w, $wtimeout, $journal, $fsync);
 
 
 /* We prefer to read from the secondary, but are OK to read from the primary
  * if we can't find any secondaries */
-$prefer = MongoDB\ReadPreference::RP_SECONDARY_PREFERRED;
+$prefer = MongoDB\Driver\ReadPreference::RP_SECONDARY_PREFERRED;
 $tags = array(
     /* Prefer the West Coast datacenter in Iceland */
     array(&quot;country&quot; =&gt; &quot;iceland&quot;, &quot;datacenter&quot; =&gt; &quot;west&quot;),
@@ -154,11 +154,11 @@ $tags = array(
 );
 
 /* Construct the ReadPreference object from our options */
-$rp = new MongoDB\ReadPreference($prefer, $tags);
+$rp = new MongoDB\Driver\ReadPreference($prefer, $tags);
 
 
 /* Construct the MongoDB Manager */
-$manager = new MongoDB\Manager(&quot;mongodb://localhost:27017&quot;);
+$manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 
 ?&gt;
 </code></pre>
@@ -170,7 +170,7 @@ try {
     /* Full namespace as the first argumnet (databasename.collectionname),
      * and the document to insert as the second.
      *
-     * Returns MongoDB\WriteResult on success, throws exception on failure
+     * Returns MongoDB\Driver\WriteResult on success, throws exception on failure
      */
     $result = $manager-&gt;executeInsert(&quot;db.collection&quot;, $document, $wc);
 } catch(Exception $e) {
@@ -185,12 +185,12 @@ try {
 <pre><code class="php">&lt;?php
 
 /* Construct an empty find query (&quot;select all&quot;) */
-$query = new MongoDB\Query(array());
+$query = new MongoDB\Driver\Query(array());
 
 try {
     /* Full namespace as the first argument (dbname.collname), and the query object
      * to execute as the second.
-     * Returns MongoDB\QueryResult on success, throws exception on failure
+     * Returns MongoDB\Driver\QueryResult on success, throws exception on failure
      */
     $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query, $rp);
 
@@ -225,7 +225,7 @@ $options = array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false);
 try {
     /* Full namespace as the first argument (dbname.collname), the search criteria
      * second.
-     * Returns MongoDB\WriteResult on success, throws exception on failure
+     * Returns MongoDB\Driver\WriteResult on success, throws exception on failure
      */
     $result = $manager-&gt;executeUpdate(&quot;db.collection&quot;, $where, $set, $options, $wc);
     var_dump($result);
@@ -252,7 +252,7 @@ try {
     /*
     /* Full namespace as the first argument (dbname.collname), the search criteria
      * second.
-     * Returns MongoDB\WriteResult on success, throws exception on failure
+     * Returns MongoDB\Driver\WriteResult on success, throws exception on failure
      */
     $result = $manager-&gt;executeDelete(&quot;db.collection&quot;, $where, $options, $wc);
     var_dump($result);
@@ -274,5 +274,6 @@ try {
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
         <script src="../pretty.js"></script>
+        <script src="../jira.js"></script>
     </body>
 </html>
