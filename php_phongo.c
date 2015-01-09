@@ -1426,10 +1426,14 @@ PHP_MINIT_FUNCTION(phongo)
 
 	/* Prep default object handlers to be used when we register the classes */
 	memcpy(&phongo_std_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	phongo_std_object_handlers.clone_obj = NULL;
-	phongo_std_object_handlers.read_property = NULL;
-	phongo_std_object_handlers.write_property = NULL;
-	phongo_std_object_handlers.get_debug_info = NULL;
+	phongo_std_object_handlers.clone_obj            = NULL;
+	/*
+	phongo_std_object_handlers.get_debug_info       = NULL;
+	phongo_std_object_handlers.compare_objects      = NULL;
+	phongo_std_object_handlers.cast_object          = NULL;
+	phongo_std_object_handlers.count_elements       = NULL;
+	phongo_std_object_handlers.get_closure          = NULL;
+	*/
 
 	PHP_MINIT(bson)(INIT_FUNC_ARGS_PASSTHRU);
 
