@@ -1,116 +1,173 @@
 <?php
-trait ObjectDiff {
+interface Changeset {
+    function getBSONChanges();
+}
+trait foobar {
     protected $_origin;
 
     protected function _getData() {
         return get_object_vars($this);
     }
     protected function _getOriginState() {
+        var_dump($this->_origin, __LINE__);
         return $this->_origin;
     }
     protected function _initState($props) {
         $this->_origin = $props;
+        var_dump($this->_origin, __LINE__);
     }
 
+    function _getBSONChangesRecursive($current, $origin) {
+        var_dump(__LINE__);
+        $changes = array();
+        debug_print_backtrace();
+        foreach($current as $k => $v) {
+            if (is_object($v)) {
+                var_dump(__LINE__);
+                if ($v instanceof Changeset) {
+                    $ret = $v->getBSONChanges();
+                    if ($ret) {
+                        $changes[$k] = $ret;
+                    }
+                    continue;
+                }
+                if ($v !== $origin[$k]) {
+                    $changes[$k] = $v;
+                }
+                continue;
+            }
+            if (!isset($origin[$k])) {
+                var_dump(__LINE__);
+                $changes[$k] = $v;
+                continue;
+            }
+            if (is_array($v)) {
+                var_dump(__LINE__);
+                var_dump(__LINE__);
+                var_dump($v, $origin[$k]);
+                $ret = $this->_getBSONChangesRecursive($v, $origin[$k]);
+                if ($ret) {
+                    var_dump(__LINE__);
+                    $changes[$k] = $ret;
+                }
+                var_dump(__LINE__);
+                continue;
+            }
+            if (is_scalar($v)) {
+                var_dump(__LINE__);
+                if ($v !== $origin[$k]) {
+                    $changes[$k] = $v;
+                }
+                continue;
+            }
+            var_dump(__LINE__);
+        }
+        return $changes;
+    }
     function getBSONChanges() {
         $origin = $this->_getOriginState();
+        var_dump($this->_origin, __LINE__);
+        var_dump($origin, __LINE__);exit;
+        $current = $this->_getData();
+        $changes = $this->_getBSONChangesRecursive($current, $origin);
+        return $changes;
+    }
+}
+
+class Blog implements BSON\Persistable {
+    use foobar;
+
+    protected $title;
+    protected $entry;
+    protected $author;
+    protected $comments = array();
+
+    function __construct($title, $entry) {
+        $this->title = $title;
+        $this->entry = $entry;
+    }
+    function setAuthor(Person $author) {
+        $this->author = $author;
+    }
+    function addComment(Comment $comment) {
+        $this->comments[] = $comment;
+    }
+
+    function bsonSerialize() {
+        $data = get_object_vars($this);
+        return $data;
+    }
+    function bsonUnserialize(array $data) {
+        $this->_initState($data);
+
+        $this->title    = $data["title"];
+        $this->entry    = $data["entry"];
+        $this->author   = $data["author"];
+        $this->comments = (array)$data["comments"];
     }
 }
 
 class Person implements BSON\Persistable {
-    use ObjectDiff;
+    use foobar;
 
     protected $_id;
     protected $name;
-    protected $age;
-    protected $address = array();
-    protected $friends = array();
-    protected $secret = "none";
+    protected $email;
 
-    function __construct($name, $age) {
-        $this->name    = $name;
-        $this->age     = $age;
-        $this->address = array();
-        $this->secret  = "$name confidential info";
-        /* Pregenerate our ObjectID */
-        $this->_id     = new BSON\ObjectID();
-    }
-    function addAddress(Address $address) {
-        $this->address[] = $address;
-    }
-    function addFriend(Person $friend) {
-        $this->friends[] = $friend;
+    function __construct($name, $email) {
+        /* Generate our own ObjectID */
+        $this->_id   = new BSON\ObjectID();
+
+        $this->name  = $name;
+        $this->email = $email;
     }
     function bsonSerialize() {
-        return array(
-            "_id"     => $this->_id,
-            "name"    => $this->name,
-            "age"     => $this->age,
-            "address" => $this->address,
-            "friends" => $this->friends,
-        );
+        $data = get_object_vars($this);
+        return $data;
     }
     function bsonUnserialize(array $data) {
         $this->_initState($data);
 
-        $this->_id     = $data["_id"];
-        $this->name    = $data["name"];
-        $this->age     = $data["age"];
-        $this->address = (array)$data["address"];
-        $this->friends = (array)$data["friends"];
+        $this->_id   = $data["_id"];
+        $this->name  = $data["name"];
+        $this->email = $data["email"];
     }
 }
 
-class Address implements BSON\Persistable {
-    use ObjectDiff;
-    protected $zip;
-    protected $country;
+class Comment implements BSON\Persistable {
+    use foobar;
+    protected $person;
+    protected $message;
 
-    function __construct($zip, $country) {
-        $this->zip = $zip;
-        $this->country = $country;
+    function __construct(Person $person, $message) {
+        $this->person  = $person;
+        $this->message = $message;
     }
     function bsonSerialize() {
-        return array(
-            "zip"     => $this->zip,
-            "country" => $this->country,
-        );
+        $data = get_object_vars($this);
+        return $data;
     }
     function bsonUnserialize(array $data) {
         $this->_initState($data);
 
-        $this->zip = $data["zip"];
-        $this->country = $data["country"];
+        $this->person  = $data["person"];
+        $this->message = $data["message"];
     }
 }
 
 
 
-$hannes = new Person("Hannes", 31);
-$sunnyvale = new Address(94086, "USA");
-$kopavogur = new Address(200, "Iceland");
-$hannes->addAddress($sunnyvale);
-$hannes->addAddress($kopavogur);
-
-$mikola = new Person("Jeremy", 21);
-$michigan = new Address(48169, "USA");
-$mikola->addAddress($michigan);
-
-$hannes->addFriend($mikola);
-#$mikola->addFriend($hannes);
-
-$didier = new Person("Drogba", 36);
-
+$blog = new Blog("MOS: Mongo Object Storage", "MOS is an amazing object storage that does amazing things");
+$hannes = new Person("Hannes Magnusson", "bjori@php.net");
+$blog->setAuthor($hannes);
 
 try {
     $wc = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
-    $manager = new MongoDB\Driver\Manager("mongodb://192.168.112.10:2000");
+    $manager = new MongoDB\Driver\Manager("mongodb://localhost");
     /* Remove any previous people */
-    $result = $manager->executeDelete("congress.people", array());
+    $result = $manager->executeDelete("myapp.blogs", array());
 
-    $result = $manager->executeInsert("congress.people", $hannes, $wc);
-    $result = $manager->executeInsert("congress.people", $mikola, $wc);
-    echo "Hannes & Jeremy have been inserted\n";
+    $result = $manager->executeInsert("myapp.blogs", $blog, $wc);
 } catch(Exception $e) {
     echo $e->getMessage(), "\n";
     exit;
@@ -118,10 +175,13 @@ try {
 
 $rp = new MongoDB\Driver\ReadPreference(MongoDB\Driver\ReadPreference::RP_PRIMARY_PREFERRED);
 $query = new MongoDB\Driver\Query(array());
-$cursor = $manager->executeQuery("congress.people", $query, $rp);
-foreach($cursor as $person) {
-    $person->addFriend($didier);
-    var_dump($person->getChanges());
+$cursor = $manager->executeQuery("myapp.blogs", $query, $rp);
+foreach($cursor as $blog) {
+    $commentor = new Person("Anonymous", "anon@example.com");
+    $comment = new Comment($commentor, "This is amazing blog entry!");
+    $blog->addComment($comment);
+    //var_dump($blog);
+    var_dump($blog->getBSONChanges());
 }
 
 
