@@ -70,6 +70,12 @@
                 </li>
             
             
+            
+                <li >
+                    <a href="../ods">Object Document Serialization</a>
+                </li>
+            
+            
             </ul>
 
             <!-- Search, Navigation and Repo links -->
@@ -186,7 +192,7 @@ $batch-&gt;update(
 );
 $batch-&gt;update(
     array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;),
-    array(&quot;$set&quot; =&gt; array(&quot;viking&quot; =&gt; true)),
+    array('$set' =&gt; array(&quot;viking&quot; =&gt; true)),
     array(&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false)
 );
 $batch-&gt;update(
@@ -231,6 +237,9 @@ foreach ($result-&gt;getUpsertedIds() as $index =&gt; $id) {
 
 $query  = new MongoDB\Driver\Query(array(&quot;viking&quot; =&gt; false));
 $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query);
+/* Note that var_dump()ing the $cursor will print out all sorts of debug information
+ * about the cursor, such as ReadPreferences used, the query executed, namespace,
+ * query flags, and the current batch information */
 var_dump(iterator_to_array($cursor));
 
 ?&gt;
