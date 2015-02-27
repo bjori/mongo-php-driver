@@ -51,20 +51,16 @@ zend_object_handlers php_phongo_handler_command;
 PHP_METHOD(Command, __construct)
 {
 	php_phongo_command_t     *intern;
-	zend_error_handling       error_handling;
 	zval                     *document;
 	bson_t                   *bson = bson_new();
 	(void)return_value; (void)return_value_ptr; (void)return_value_used;
 
 
-	zend_replace_error_handling(EH_THROW, phongo_exception_from_phongo_domain(PHONGO_ERROR_INVALID_ARGUMENT), &error_handling TSRMLS_CC);
 	intern = (php_phongo_command_t *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "A", &document) == FAILURE) {
-		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
-	zend_restore_error_handling(&error_handling TSRMLS_CC);
 
 
 	zval_to_bson(document, PHONGO_BSON_NONE, bson, NULL TSRMLS_CC);

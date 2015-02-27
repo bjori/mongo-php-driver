@@ -52,19 +52,15 @@ zend_object_handlers php_phongo_handler_objectid;
 PHP_METHOD(ObjectID, __construct)
 {
 	php_phongo_objectid_t    *intern;
-	zend_error_handling       error_handling;
 	char                     *id = NULL;
 	int                       id_len;
 
 
-	zend_replace_error_handling(EH_THROW, phongo_exception_from_phongo_domain(PHONGO_ERROR_INVALID_ARGUMENT), &error_handling TSRMLS_CC);
 	intern = (php_phongo_objectid_t *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s!", &id, &id_len) == FAILURE) {
-		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
-	zend_restore_error_handling(&error_handling TSRMLS_CC);
 
 
 	if (ZEND_NUM_ARGS()) {
@@ -89,17 +85,13 @@ PHP_METHOD(ObjectID, __construct)
 PHP_METHOD(ObjectID, __toString)
 {
 	php_phongo_objectid_t    *intern;
-	zend_error_handling       error_handling;
 
 
-	zend_replace_error_handling(EH_THROW, phongo_exception_from_phongo_domain(PHONGO_ERROR_INVALID_ARGUMENT), &error_handling TSRMLS_CC);
 	intern = (php_phongo_objectid_t *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if (zend_parse_parameters_none() == FAILURE) {
-		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
-	zend_restore_error_handling(&error_handling TSRMLS_CC);
 
 
 	RETURN_STRINGL(intern->oid, 24, 1);
